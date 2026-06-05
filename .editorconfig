@@ -16,7 +16,7 @@ indent_size = 4
 indent_style = space
 indent_size = 2
 
-# Shell scripts (init.sh, and any compiled into binaries) must stay LF.
+# Shell scripts (scripts/*.sh) must stay LF.
 [*.sh]
 indent_style = space
 indent_size = 2

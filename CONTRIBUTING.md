@@ -46,8 +46,9 @@ cargo deny check advisories bans
   features you use. `Cargo.lock` is committed for reproducible builds.
 - **Commit subjects** are conventional-commit style (`type(scope): summary`) —
   they feed the changelog auto-fill via [`cliff.toml`](cliff.toml).
-- See [`AGENTS.md`](AGENTS.md) for the full, authoritative set of conventions
-  (code style, dependency management, supply chain/MSRV, version control).
+- CI is the authoritative gate for everything else: fmt, clippy
+  (warnings-as-errors), tests on Linux/Windows/macOS, `cargo deny`, and the
+  MSRV check (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
 ## Changelog
 

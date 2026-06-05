@@ -2,9 +2,9 @@
 
 ## Supported versions
 
-Security fixes are applied to the latest released version of **tessmux**.
-Older versions are not maintained — upgrade to the latest release to receive
-fixes.
+Security fixes are applied to the latest state of `main` of **tessmux** (no
+versions have been released yet — the project is in its PoC phase). Older
+states are not maintained.
 
 ## Reporting a vulnerability
 
@@ -23,7 +23,9 @@ Please include:
 - affected version(s).
 
 You can expect an initial acknowledgement within a few days. Once a fix is
-ready, a patched release is published to crates.io and the advisory is disclosed.
+ready, it lands on `main` and the advisory is disclosed. (The project is in its
+PoC phase and publishes nothing to crates.io yet; once publishable crates
+exist, fixes will also ship as patched releases.)
 
 ## Automated scanning
 

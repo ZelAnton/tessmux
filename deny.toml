@@ -5,6 +5,13 @@
 # Fail on crates with a RustSec security advisory or that have been yanked.
 version = 2
 yanked = "deny"
+ignore = [
+	# `serial` is unmaintained (notice, not a vulnerability). portable-pty 0.8
+	# pulls it unconditionally for its serial-port domain, which tessmux never
+	# uses (we only open local ConPTY/openpty sessions). Drop this when
+	# portable-pty makes serial optional or we vendor a slimmer backend.
+	"RUSTSEC-2017-0008",
+]
 
 [bans]
 # Duplicate versions of the same crate are a warning, not a hard failure.

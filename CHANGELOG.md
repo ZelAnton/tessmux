@@ -14,9 +14,13 @@ to a dated version section.
 ### Added
 - Cargo workspace skeleton (from rust-repo-template) with the `poc0-pty`
   milestone placeholder.
+- PoC 0: interactive ConPTY session via `portable-pty` behind the `PtyBackend`
+  trait boundary — raw I/O forwarding, console resize propagation, Ctrl+] clean
+  kill, `--help`/`--version`, runtime key-binding hint.
 
 ### Changed
--
+- Release workflow is hard-disabled by a guard step while the workspace has no
+  publishable crates (PoC phase).
 
 ### Fixed
 -

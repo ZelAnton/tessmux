@@ -59,6 +59,7 @@ installed on the repo and is actually listed in the ruleset's bypass list, and
 that `RELEASE_APP_ID` / `RELEASE_APP_PRIVATE_KEY` are set on the repo (not the
 org, unless the App is org-owned).
 
-> This recipe is referenced from `AGENTS.md` and `TEMPLATE.md`. It is ordinary
-> setup documentation for the generated repo, so the init script keeps it (it is
-> not one of the template-only files that init deletes).
+> This recipe is referenced from the release workflow comments. Note: while the
+> repo is in its PoC phase the release workflow is hard-disabled by a guard step
+> (see `.github/workflows/release.yml`); this setup only matters once the first
+> publishable crate exists.

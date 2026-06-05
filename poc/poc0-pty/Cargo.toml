@@ -10,6 +10,9 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+portable-pty = { workspace = true }
+anyhow = { workspace = true }
+crossterm = { workspace = true }
 
 [dev-dependencies]
 

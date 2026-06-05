@@ -33,3 +33,11 @@ rust-version = "1.85"
 #   serde = { version = "1", features = ["derive"] }  # (de)serialize config
 # ---------------------------------------------------------------------------
 [workspace.dependencies]
+# L0: cross-platform PTY abstraction; ConPTY on Windows without WSL (roadmap §2).
+portable-pty = "0.8"
+# Error handling in milestone binaries; L0+ library crates will use thiserror instead.
+anyhow = "1"
+# Raw mode + terminal::size() for wiring our *own* console to the PTY; not used
+# for rendering (the GUI layers pick their own stack later, roadmap §5).
+# Only the platform backend feature, no events/bracketed-paste.
+crossterm = { version = "0.29", default-features = false, features = ["windows"] }
