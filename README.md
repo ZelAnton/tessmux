@@ -4,9 +4,11 @@ Terminal grid for coordinating concurrent agent sessions. Native Rust, no wrappe
 ## Status
 
 Experimental — built bottom-up as a ladder of PoC milestones living under
-`poc/`. Current milestone: **PoC 0 — PTY wiring** (`poc0-pty`): an interactive
-ConPTY/PTY passthrough proving the lowest layer — spawn a shell, forward raw
-I/O, propagate console resizes, kill the child cleanly.
+`poc/`, with matured layers extracted into library crates under `crates/`.
+Current state: **PoC 0 — PTY wiring** (`poc0-pty`, an interactive ConPTY/PTY
+passthrough) on top of `crates/pty` (`tessmux-pty`) — the L0 boundary: spawn a
+shell in a PTY, stream raw I/O, propagate resizes, kill and tear down
+deterministically; comes with a scripted in-memory backend for tests.
 
 ## Run
 

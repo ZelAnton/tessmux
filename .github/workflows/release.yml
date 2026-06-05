@@ -46,13 +46,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # GUARD: tessmux is in its PoC phase — the workspace is a virtual
-      # manifest whose only member is `publish = false`. Without this guard a
+      # manifest whose members are all `publish = false`. Without this guard a
       # dispatch would "succeed" as a phantom release: the version grep below
       # matches [workspace.package], `cargo publish` exits 0 with "nothing to
       # publish", and the workflow would tag + GitHub-Release with nothing on
       # crates.io. Remove this step (and adapt the workflow per the workspace
-      # note above) when the first publishable crate (crates/pty, roadmap §9)
-      # exists.
+      # note above) only when a member actually flips to `publish = true` —
+      # merely existing under crates/ is NOT the trigger.
       - name: Refuse to release a PoC-phase workspace
         run: |
           echo "::error::tessmux has no publishable crates yet (PoC phase); releases are disabled. See the guard step in release.yml."

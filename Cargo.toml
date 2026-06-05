@@ -1,6 +1,6 @@
-# Virtual workspace manifest. Layers (crates/pty, crates/term-model, …) are
-# added as the PoC ladder grows — see .claude/roadmap/plan.md §9; until then
-# the only member is the current PoC milestone binary.
+# Virtual workspace manifest. Layer crates (crates/*) are extracted as the PoC
+# ladder matures — see .claude/roadmap/plan.md §9; milestone binaries live
+# under poc/.
 [workspace]
 resolver = "3"
 members = [
