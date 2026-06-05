@@ -4,6 +4,7 @@
 [workspace]
 resolver = "3"
 members = [
+	"crates/pty",
 	"poc/poc0-pty",
 ]
 
@@ -33,10 +34,15 @@ rust-version = "1.85"
 #   serde = { version = "1", features = ["derive"] }  # (de)serialize config
 # ---------------------------------------------------------------------------
 [workspace.dependencies]
+# Internal layer crates, consumed by milestone binaries via workspace = true.
+tessmux-pty = { path = "crates/pty" }
 # L0: cross-platform PTY abstraction; ConPTY on Windows without WSL (roadmap §2).
 portable-pty = "0.8"
-# Error handling in milestone binaries; L0+ library crates will use thiserror instead.
+# Error handling in milestone binaries; library crates use thiserror instead.
 anyhow = "1"
+# Typed error enums at library boundaries (L0+): consumers branch on failure
+# mode (e.g. kill refused vs kill failed), which anyhow cannot express.
+thiserror = "2"
 # Raw mode + terminal::size() for wiring our *own* console to the PTY; not used
 # for rendering (the GUI layers pick their own stack later, roadmap §5).
 # Only the platform backend feature, no events/bracketed-paste.

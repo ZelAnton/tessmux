@@ -1,21 +1,20 @@
 //! PoC 0 — PTY wiring milestone (see `.claude/roadmap/plan.md` §8).
 //!
 //! Proves ConPTY works on Windows: spawns a shell (`pwsh` by default) via the
-//! [`pty::PtyBackend`] trait, forwards raw stdin/stdout, propagates console
-//! resizes, and kills the child cleanly on Ctrl+].
+//! [`tessmux_pty::PtyBackend`] trait, forwards raw stdin/stdout, propagates
+//! console resizes, and kills the child cleanly on Ctrl+].
 //!
 //! Usage: `poc0-pty [program [args...]]` — run from a real terminal.
 //! Ctrl+C is forwarded to the child (cancels its command); Ctrl+] kills it.
 
 use std::io::{ErrorKind, Read, Write};
-use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
 use crossterm::terminal;
 
-use poc0_pty::pty::{PortablePtyBackend, PtyBackend, PtySize, SpawnCommand};
+use tessmux_pty::{PortablePtyBackend, PtyBackend, PtySize, SpawnCommand, pump_reader};
 
 /// Ctrl+] — telnet-style escape byte: kill the child instead of forwarding.
 const KILL_BYTE: u8 = 0x1d;
@@ -24,12 +23,6 @@ const KILL_BYTE: u8 = 0x1d;
 /// than crossterm's event stream) keeps stdin bytes untouched for the
 /// forwarder thread.
 const RESIZE_POLL_INTERVAL: Duration = Duration::from_millis(200);
-
-/// Grace period for the reader to drain conhost's buffered tail after the
-/// child exits. On Unix the reader EOFs as soon as the child is gone, so the
-/// wait ends early; on Windows EOF needs the session drop, so the full grace
-/// elapses before we close the pseudo console.
-const READER_DRAIN_GRACE: Duration = Duration::from_millis(150);
 
 fn main() -> Result<()> {
     let cmd = match parse_args(std::env::args().skip(1)) {
@@ -60,8 +53,8 @@ fn main() -> Result<()> {
 
     // Acquire every session handle before spawning any thread: a `?` exit
     // past this point would otherwise abandon live threads mid-teardown.
-    let mut reader = session.reader()?;
-    let mut writer = session.writer()?;
+    let reader = session.reader()?;
+    let mut writer = session.take_writer()?;
     let mut killer = session.killer();
     let resizer = session.resizer();
 
@@ -78,32 +71,21 @@ fn main() -> Result<()> {
         cmd.program
     );
 
-    // PTY -> our stdout. Joined after wait(); signals completion through
-    // `reader_done` so teardown can skip the drain grace when the reader has
-    // already hit EOF (Unix).
-    let (reader_done, reader_done_rx) = mpsc::channel::<()>();
+    // PTY -> our stdout. Joined after close() — the trait's EOF postcondition
+    // makes that join deterministic.
     let reader_thread = thread::spawn(move || {
         // Lock stdout once for the thread's lifetime instead of re-acquiring
         // the global lock twice (write + flush) per chunk.
         let mut out = std::io::stdout().lock();
         let mut out_alive = true;
-        let mut buf = [0u8; 4096];
-        loop {
-            match reader.read(&mut buf) {
-                Ok(0) => break, // EOF — pseudo console closed
-                Ok(n) => {
-                    // Keep draining even after our stdout breaks (e.g. a pipe
-                    // consumer died): an undrained pipe blocks conhost, the
-                    // child wedges on its next write, and wait() never returns.
-                    if out_alive {
-                        out_alive = out.write_all(&buf[..n]).and_then(|()| out.flush()).is_ok();
-                    }
-                }
-                Err(e) if e.kind() == ErrorKind::Interrupted => continue, // EINTR — retry
-                Err(_) => break,
+        pump_reader(reader, |chunk| {
+            // Keep draining even after our stdout breaks (e.g. a pipe
+            // consumer died): an undrained pipe blocks conhost, the child
+            // wedges on its next write, and wait() never returns.
+            if out_alive {
+                out_alive = out.write_all(chunk).and_then(|()| out.flush()).is_ok();
             }
-        }
-        let _ = reader_done.send(());
+        });
     });
 
     // Our stdin -> PTY, watching for the kill byte. Not joined: it blocks in
@@ -157,10 +139,13 @@ fn main() -> Result<()> {
     });
 
     // Run teardown before propagating a wait() error so the reader thread is
-    // never abandoned and the console is always restored in order.
+    // never abandoned and the console is always restored in order. close()
+    // guarantees the reader reaches EOF, so the join cannot hang. Ordering is
+    // load-bearing: close() must run BEFORE the join and never on the reader
+    // thread itself — pre-24H2 Windows ClosePseudoConsole blocks until
+    // clients disconnect, which needs the reader still draining elsewhere.
     let wait_result = session.wait();
-    let _ = reader_done_rx.recv_timeout(READER_DRAIN_GRACE);
-    drop(session); // close the pseudo console -> reader hits EOF (see trait docs)
+    let _ = session.close();
     let _ = reader_thread.join();
     drop(raw_guard); // restore the console before printing our own line
 
@@ -249,7 +234,7 @@ impl Drop for RawModeGuard {
 #[cfg(test)]
 mod tests {
     use super::{Cli, parse_args, split_at_kill_byte};
-    use poc0_pty::pty::SpawnCommand;
+    use tessmux_pty::SpawnCommand;
 
     fn run_command(args: &[&str]) -> SpawnCommand {
         match parse_args(args.iter().map(ToString::to_string)) {

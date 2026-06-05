@@ -1,0 +1,27 @@
+[package]
+name = "tessmux-pty"
+description = "L0 boundary of tessmux: PTY backend traits with a portable-pty (ConPTY/openpty) implementation."
+# Internal layer crate; never published during the PoC phase.
+publish = false
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[features]
+# In-memory scripted backend (FakePtyBackend) for deterministic tests of the
+# upper layers — no real PTY, no real processes.
+testing = []
+
+[dependencies]
+portable-pty = { workspace = true }
+thiserror = { workspace = true }
+# Not used in our API: portable-pty surfaces anyhow::Error, which portable.rs
+# flattens into io::Error for the typed PtyError boundary.
+anyhow = { workspace = true }
+
+[dev-dependencies]
+# Self-dependency trick: integration tests get the `testing` feature (the
+# fake backend) without forcing it on regular consumers.
+tessmux-pty = { path = ".", features = ["testing"] }
