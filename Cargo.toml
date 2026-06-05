@@ -1,0 +1,35 @@
+# Virtual workspace manifest. Layers (crates/pty, crates/term-model, …) are
+# added as the PoC ladder grows — see .claude/roadmap/plan.md §9; until then
+# the only member is the current PoC milestone binary.
+[workspace]
+resolver = "3"
+members = [
+	"poc/poc0-pty",
+]
+
+# Shared metadata — members inherit with `field.workspace = true`.
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/ZelAnton/tessmux"
+# Minimum Supported Rust Version. 1.85 is the edition-2024 floor; raise it when
+# you adopt a newer language/std feature. The `msrv` CI job verifies it — keep
+# the two in sync.
+rust-version = "1.85"
+
+# ---------------------------------------------------------------------------
+# Dependencies
+#
+# Convention (see AGENTS.md "Dependency management"): this workspace fixes NO
+# allow-list of crates. Add whatever the project needs — but give every new
+# dependency an inline comment explaining *why* it's here and what it's used
+# for, so the next reader (human or agent) doesn't have to guess. Pin major
+# versions, prefer well-maintained crates, and keep Cargo.lock committed.
+# Shared versions live here in [workspace.dependencies]; members reference
+# them with `dep = { workspace = true }`.
+#
+# Example:
+#   serde = { version = "1", features = ["derive"] }  # (de)serialize config
+# ---------------------------------------------------------------------------
+[workspace.dependencies]

@@ -1,0 +1,18 @@
+[package]
+name = "poc0-pty"
+description = "PoC 0 — PTY wiring: spawn a shell via ConPTY (portable-pty), forward I/O, resize, clean kill."
+# PoC milestone binaries are never published to crates.io.
+publish = false
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+
+[dev-dependencies]
+
+# Platform-specific dependencies go under a cfg target table, e.g.:
+# [target.'cfg(windows)'.dependencies]
+# winapi-util = "0.1"  # <why this Windows-only dependency is needed>
