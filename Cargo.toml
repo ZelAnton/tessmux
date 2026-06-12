@@ -37,7 +37,7 @@ rust-version = "1.85"
 # Internal layer crates, consumed by milestone binaries via workspace = true.
 tessmux-pty = { path = "crates/pty" }
 # L0: cross-platform PTY abstraction; ConPTY on Windows without WSL (roadmap §2).
-portable-pty = "0.8"
+portable-pty = "0.9"
 # Error handling in milestone binaries; library crates use thiserror instead.
 anyhow = "1"
 # Typed error enums at library boundaries (L0+): consumers branch on failure
